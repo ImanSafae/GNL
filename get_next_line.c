@@ -11,47 +11,64 @@
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+
+void	gnl_check_previous_rest(char **rest, char **line)
+{
+	if (rest)
+	{
+		*line = ft_strjoin(*line, *rest);
+		free(*rest);
+		*rest = NULL;
+	}
+}
+
+void	gnl_fill_line(char **buffer, char **line, char **tmp)
+{
+	*tmp = ft_strjoin(*line, *buffer);
+	free(*line);
+	*line = ft_strdup(*tmp);
+	free(*tmp);
+}
+
+char	*gnl_return_line(int count, char *line, char *tmp, char **rest)
+{
+	if (count <= 0 && line && line[0])
+		return (line);
+	else if (ft_strchr(line, '\n') >= 0)
+	{
+		tmp = ft_strndup(line, ft_strchr(line, '\n'));
+		*rest = ft_strdup(line + (ft_strchr(line, '\n') + 1));
+		free(line);
+		return (tmp);
+	}
+	free(line);
+	return (NULL);
+}
 
 char	*get_next_line(int fd)
 {
-	static char	*rest;
+	static char	*rest = NULL;
 	char		*buffer;
-	char		*res;
+	char		*line;
 	int			count;
+	char		*tmp;
 
+	line = NULL;
 	buffer = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	res = NULL;
-	if (rest && *rest)
-		res = ft_strjoin(res, rest);
-	count = read(fd, buffer, BUFFER_SIZE);
-	while ((ft_strchr(buffer, '\n') == -1 && ft_strchr(res, '\n') == -1) && count != 0)
+	gnl_check_previous_rest(&rest, &line);
+	if (fd < 0)
 	{
-		res = ft_strjoin(res, buffer);
-		count = read(fd, buffer, BUFFER_SIZE);
-	}
-	if (ft_strchr(res, '\n') != -1)
-	{
-		res = ft_strjoin(res, buffer);
 		free(buffer);
-		buffer = ft_strndup(res, ft_strchr(res, '\n'));
-		rest = ft_strndup(res + (ft_strchr(res, '\n') + 1), ft_strlen(res) - ft_strchr(res, '\n'));
-		free(res);
-		return (buffer);
+		free(line);
+		return (NULL);
 	}
-	return (res);
+	count = 1;
+	while ((ft_strchr(line, '\n') < 0) && (count > 0))
+	{
+		count = read(fd, buffer, BUFFER_SIZE);
+		buffer[count] = 0;
+		gnl_fill_line(&buffer, &line, &tmp);
+	}
+	free(buffer);
+	return (gnl_return_line(count, line, tmp, &rest));
 }
-
-// int	main()
-// {
-// 	int fd = open("./test", O_RDONLY);
-// 	printf("%s\n", get_next_line(fd));
-// 	printf("%s\n", get_next_line(fd));
-// 	printf("%s\n", get_next_line(fd));
-// 	close(fd);
-// }

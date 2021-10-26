@@ -12,10 +12,19 @@
 
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
-# define BUFFER_SIZE 1
-char	*ft_strndup(char *str, int n);
+# include <unistd.h>
+# include <stdlib.h>
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <fcntl.h>
+
 int		ft_strchr(char *s, char c);
-int		ft_strlen(char *str);
+char	*ft_strdup(char *s);
 char	*ft_strjoin(char *s1, char *s2);
+int		ft_strlen(char *str);
+char	*ft_strndup(char *str, int n);
 char	*get_next_line(int fd);
+void	gnl_check_previous_rest(char **rest, char **line);
+void	gnl_fill_line(char **buffer, char **line, char **tmp);
+char	*gnl_return_line(int count, char *line, char *tmp, char **rest);
 #endif
