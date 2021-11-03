@@ -44,7 +44,7 @@ char	*ft_strndup(char *str, int n)
 	int		i;
 
 	i = 0;
-	res = malloc(sizeof(char) * (n + 1));
+	res = malloc(sizeof(char) * (n + 2));
 	if (!str || !res)
 		return (NULL);
 	while ((i <= n) && str[i])
